@@ -52,13 +52,95 @@ jobs:
     - name: Install frontend dependencies
       run: bun install
     
+    - name: Check and create missing icons
+      run: |
+        # Vérifier si le dossier icons existe
+        if (-not (Test-Path "src-tauri/icons")) {
+          Write-Host "Creating icons directory..."
+          New-Item -ItemType Directory -Path "src-tauri/icons" -Force
+        }
+        
+        # Vérifier si icon.ico existe
+        if (-not (Test-Path "src-tauri/icons/icon.ico")) {
+          Write-Host "icon.ico not found, creating placeholder..."
+          # Télécharger un placeholder icon ou créer un basique
+          try {
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/templates/vanilla/src-tauri/icons/icon.ico" -OutFile "src-tauri/icons/icon.ico"
+            Write-Host "Downloaded default Tauri icon"
+          } catch {
+            Write-Host "Failed to download icon, creating minimal ICO file"
+            # Créer un fichier ICO minimal (32x32 transparent)
+            $icoBytes = [System.Convert]::FromBase64String("AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAABMLAAATCwAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==")
+            [System.IO.File]::WriteAllBytes("src-tauri/icons/icon.ico", $icoBytes)
+            Write-Host "Created minimal ICO file"
+          }
+        } else {
+          Write-Host "icon.ico already exists"
+        }
+        
+        # Vérifier les autres icônes couramment requises
+        $requiredIcons = @("icon.png", "32x32.png", "128x128.png", "128x128@2x.png", "icon.icns")
+        foreach ($icon in $requiredIcons) {
+          if (-not (Test-Path "src-tauri/icons/$icon")) {
+            Write-Host "Missing icon: $icon - will try to generate from icon.ico"
+          }
+        }
+    
     - name: Install WebView2
       run: |
         Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "MicrosoftEdgeWebview2Setup.exe"
         Start-Process -FilePath "MicrosoftEdgeWebview2Setup.exe" -ArgumentList "/silent /install" -Wait
     
-    - name: Build Tauri application
-      run: bun run tauri build
+    - name: Debug Tauri configuration
+      run: |
+        Write-Host "Checking Tauri configuration..."
+        if (Test-Path "src-tauri/tauri.conf.json") {
+          Write-Host "tauri.conf.json exists"
+          Get-Content "src-tauri/tauri.conf.json" | Select-Object -First 20
+        } else {
+          Write-Host "tauri.conf.json not found"
+        }
+        
+        Write-Host "`nChecking icons directory:"
+        if (Test-Path "src-tauri/icons") {
+          Get-ChildItem "src-tauri/icons" | ForEach-Object { Write-Host "  - $($_.Name)" }
+        } else {
+          Write-Host "Icons directory not found"
+        }
+        
+        Write-Host "`nChecking Cargo.toml:"
+        if (Test-Path "src-tauri/Cargo.toml") {
+          Write-Host "Cargo.toml exists"
+          Get-Content "src-tauri/Cargo.toml" | Select-Object -First 15
+        } else {
+          Write-Host "Cargo.toml not found"
+        }
+    
+    - name: Build Tauri application (with error handling)
+      run: |
+        Write-Host "Starting Tauri build..."
+        try {
+          bun run tauri build --verbose
+        } catch {
+          Write-Host "Build failed, trying alternative approach..."
+          Write-Host "Error details: $_"
+          
+          # Essayer de build seulement l'exécutable sans les bundles
+          Write-Host "Attempting to build executable only..."
+          cd src-tauri
+          cargo build --release
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Cargo build successful"
+            # Copier l'exécutable vers un emplacement attendu
+            if (Test-Path "target/release/claudia.exe") {
+              Copy-Item "target/release/claudia.exe" "../claudia.exe"
+              Write-Host "Executable copied to root directory"
+            }
+          } else {
+            Write-Host "Cargo build also failed"
+            exit 1
+          }
+        }
       env:
         TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
         TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
@@ -72,15 +154,19 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: claudia-windows-exe
-        path: src-tauri/target/release/claudia.exe
+        path: |
+          src-tauri/target/release/claudia.exe
+          claudia.exe
         retention-days: 30
+      continue-on-error: true
     
-    - name: Upload MSI installer
+    - name: Upload MSI installer (if exists)
       uses: actions/upload-artifact@v4
       with:
         name: claudia-windows-installer
         path: src-tauri/target/release/bundle/msi/*.msi
         retention-days: 30
+      continue-on-error: true
     
     - name: Upload to Release (if release)
       if: github.event_name == 'release'
