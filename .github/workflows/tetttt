@@ -1,0 +1,120 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+  workflow_dispatch:  # Permet de lancer manuellement
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: x86_64-pc-windows-msvc
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+    
+    - name: Cache Rust dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          src-tauri/target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Cache Bun dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
+    
+    - name: Install frontend dependencies
+      run: bun install
+    
+    - name: Install WebView2
+      run: |
+        Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "MicrosoftEdgeWebview2Setup.exe"
+        Start-Process -FilePath "MicrosoftEdgeWebview2Setup.exe" -ArgumentList "/silent /install" -Wait
+    
+    - name: Build Tauri application
+      run: bun run tauri build
+      env:
+        TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+        TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+    
+    - name: List build artifacts
+      run: |
+        Write-Host "Build artifacts:"
+        Get-ChildItem -Path "src-tauri/target/release/" -Recurse -File | Where-Object { $_.Name -match "\.(exe|msi)$" } | ForEach-Object { Write-Host $_.FullName }
+    
+    - name: Upload executable artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: claudia-windows-exe
+        path: src-tauri/target/release/claudia.exe
+        retention-days: 30
+    
+    - name: Upload MSI installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: claudia-windows-installer
+        path: src-tauri/target/release/bundle/msi/*.msi
+        retention-days: 30
+    
+    - name: Upload to Release (if release)
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          src-tauri/target/release/claudia.exe
+          src-tauri/target/release/bundle/msi/*.msi
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job optionnel pour tester l'exécutable
+  test-executable:
+    needs: build-windows
+    runs-on: windows-latest
+    if: github.event_name != 'release'
+    
+    steps:
+    - name: Download executable
+      uses: actions/download-artifact@v4
+      with:
+        name: claudia-windows-exe
+        path: ./
+    
+    - name: Test executable
+      run: |
+        Write-Host "Testing executable..."
+        if (Test-Path "./claudia.exe") {
+          Write-Host "✅ Executable exists"
+          $fileInfo = Get-Item "./claudia.exe"
+          Write-Host "File size: $($fileInfo.Length) bytes"
+          Write-Host "Creation time: $($fileInfo.CreationTime)"
+        } else {
+          Write-Host "❌ Executable not found"
+          exit 1
+        }
